@@ -25,7 +25,13 @@ class Config:
     WTF_CSRF_ENABLED = True
 
     # Rate limiting
-    RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI', 'redis://localhost:6379/1')
+    # Use memory storage if no Redis URL provides (or if it's localhost in production)
+    _redis_url = os.environ.get('RATELIMIT_STORAGE_URI') or os.environ.get('REDIS_URL')
+    if _redis_url and 'localhost' not in _redis_url:
+        RATELIMIT_STORAGE_URI = _redis_url
+    else:
+        RATELIMIT_STORAGE_URI = 'memory://'
+    
     RATELIMIT_DEFAULT = '200/hour'
 
     # Mail
