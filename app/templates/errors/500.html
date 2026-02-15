@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}500 — WorkClock{% endblock %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center">
+        <h1 class="text-6xl font-bold text-gray-300 dark:text-gray-700">500</h1>
+        <p class="mt-4 text-xl text-gray-600 dark:text-gray-400">Something went wrong</p>
+        <p class="mt-2 text-gray-500 dark:text-gray-500">Please try again later.</p>
+        <a href="{{ url_for('attendance.kiosk') }}"
+           class="mt-6 inline-block px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
+            Go Home
+        </a>
+    </div>
+</div>
+{% endblock %}

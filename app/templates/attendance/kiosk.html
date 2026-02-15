@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Clock In / Out — WorkClock{% endblock %}
+
+{% block nav %}
+<!-- Minimal nav for kiosk mode -->
+<nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between h-14 items-center">
+        <div class="flex items-center space-x-2">
+            <svg class="w-7 h-7 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-lg font-bold text-gray-900 dark:text-white">WorkClock</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('auth.login') }}" class="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                Manager
+            </a>
+            <button id="darkModeToggle" type="button"
+                    class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors">
+                <svg class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                </svg>
+                <svg class="w-4 h-4 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[85vh] px-4">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <div id="liveClock" class="text-5xl font-light text-gray-700 dark:text-gray-300 tabular-nums tracking-wide"></div>
+            <div id="liveDate" class="mt-2 text-sm text-gray-400 dark:text-gray-500"></div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Clock In / Out</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your 4-digit PIN below</p>
+            <form id="pinForm" method="POST" action="{{ url_for('attendance.clock') }}">
+                {{ form.hidden_tag() }}
+                <div class="flex items-center justify-center mb-6">
+                    <input type="password" name="pin" id="pinInput" maxlength="4" pattern="\d{4}" autocomplete="off"
+                        class="text-center text-2xl font-mono px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none w-48 tracking-widest"
+                        placeholder="••••" autofocus required>
+                </div>
+                <input type="hidden" name="gps_lat" id="gpsLat">
+                <input type="hidden" name="gps_lng" id="gpsLng">
+                <button type="submit" class="w-full py-3 mt-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg text-lg transition-colors shadow-sm">Submit</button>
+            </form>
+            <div id="loadingIndicator" class="hidden mt-4 text-center">
+                <div class="inline-block w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Processing...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/kiosk.js') }}"></script>
+{% endblock %}

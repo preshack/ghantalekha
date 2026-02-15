@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Manage Employees — WorkClock{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manage Employees</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Add, edit, or remove employees
+            </p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex items-center gap-3">
+            <!-- Toggle inactive -->
+            {% if show_inactive %}
+            <a href="{{ url_for('dashboard.employees') }}"
+               class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Hide Inactive
+            </a>
+            {% else %}
+            <a href="{{ url_for('dashboard.employees', show_inactive=1) }}"
+               class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Show Inactive
+            </a>
+            {% endif %}
+
+            <!-- Add Employee -->
+            <a href="{{ url_for('dashboard.add_employee') }}"
+               class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add Employee
+            </a>
+
+            <!-- Back to Dashboard -->
+            <a href="{{ url_for('dashboard.index') }}"
+               class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Employee Cards -->
+    {% if employees %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for emp in employees %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6
+                    {% if not emp.is_active %}opacity-60{% endif %}">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm
+                                {% if emp.is_active %}bg-brand-600{% else %}bg-gray-400{% endif %}">
+                        {{ emp.name[0] | upper }}
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ emp.name }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ emp.email }}</p>
+                    </div>
+                </div>
+                {% if not emp.is_active %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                    Inactive
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                    Active
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Hourly Rate</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white">${{ '{:.2f}'.format(emp.hourly_rate) }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Joined</p>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {{ emp.created_at.strftime('%b %d, %Y') if emp.created_at else 'N/A' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-5 flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <a href="{{ url_for('dashboard.edit_employee', employee_id=emp.id) }}"
+                   class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 text-sm font-medium rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Edit
+                </a>
+
+                {% if emp.is_active %}
+                <form method="POST" action="{{ url_for('dashboard.deactivate_employee', employee_id=emp.id) }}"
+                      class="flex-1"
+                      onsubmit="return confirm('Deactivate {{ emp.name }}? They will not be able to clock in.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-sm font-medium rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                        </svg>
+                        Deactivate
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('dashboard.activate_employee', employee_id=emp.id) }}"
+                      class="flex-1">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm font-medium rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Activate
+                    </button>
+                </form>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('dashboard.delete_employee', employee_id=emp.id) }}"
+                      onsubmit="return confirm('PERMANENTLY delete {{ emp.name }} and all their records? This cannot be undone!');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+        <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">No employees found</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">Get started by adding your first employee.</p>
+        <a href="{{ url_for('dashboard.add_employee') }}"
+           class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
+            Add Employee
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

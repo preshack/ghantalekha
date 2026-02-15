@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Clocked In' if action == 'clock_in' else 'Clocked Out' }} — WorkClock{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen px-4">
+    <div class="w-full max-w-md text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-10 border
+            {% if action == 'clock_in' %}
+                border-green-200 dark:border-green-700
+            {% else %}
+                border-blue-200 dark:border-blue-700
+            {% endif %}
+        ">
+            <!-- Icon -->
+            {% if action == 'clock_in' %}
+            <div class="w-20 h-20 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+            </div>
+            {% else %}
+            <div class="w-20 h-20 mx-auto rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+            </div>
+            {% endif %}
+
+            <!-- Status -->
+            <h1 class="text-3xl font-bold
+                {% if action == 'clock_in' %}
+                    text-green-700 dark:text-green-400
+                {% else %}
+                    text-blue-700 dark:text-blue-400
+                {% endif %}
+            ">
+                {{ 'Clocked In' if action == 'clock_in' else 'Clocked Out' }}
+            </h1>
+
+            <!-- Employee Name -->
+            <p class="mt-3 text-xl text-gray-700 dark:text-gray-300">{{ employee.name }}</p>
+
+            <!-- Time -->
+            <div class="mt-6 py-4 px-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                {% if action == 'clock_in' %}
+                <p class="text-sm text-gray-500 dark:text-gray-400">Clock In Time</p>
+                <p class="text-2xl font-mono font-semibold text-gray-800 dark:text-gray-200 mt-1">
+                    {{ record.clock_in.strftime('%I:%M %p') }}
+                </p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                    {{ record.clock_in.strftime('%B %d, %Y') }}
+                </p>
+                {% else %}
+                <p class="text-sm text-gray-500 dark:text-gray-400">Clock Out Time</p>
+                <p class="text-2xl font-mono font-semibold text-gray-800 dark:text-gray-200 mt-1">
+                    {{ record.clock_out.strftime('%I:%M %p') }}
+                </p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                    {{ record.clock_out.strftime('%B %d, %Y') }}
+                </p>
+                {% if record.work_duration_minutes %}
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Shift Duration</p>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-1">
+                        {{ record.formatted_duration }}
+                    </p>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Auto redirect countdown -->
+            <div class="mt-6">
+                <p class="text-sm text-gray-400 dark:text-gray-500">
+                    Returning to kiosk in <span id="countdown" class="font-semibold text-brand-600 dark:text-brand-400">5</span>s
+                </p>
+                <div class="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div id="progressBar" class="h-1.5 rounded-full transition-all duration-1000 ease-linear
+                        {% if action == 'clock_in' %}bg-green-500{% else %}bg-blue-500{% endif %}"
+                         style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-redirect to kiosk after 5 seconds
+    let seconds = 5;
+    const countdown = document.getElementById('countdown');
+    const progressBar = document.getElementById('progressBar');
+
+    const timer = setInterval(() => {
+        seconds--;
+        countdown.textContent = seconds;
+        progressBar.style.width = (seconds / 5 * 100) + '%';
+
+        if (seconds <= 0) {
+            clearInterval(timer);
+            window.location.href = '{{ url_for("attendance.kiosk") }}';
+        }
+    }, 1000);
+</script>
+{% endblock %}

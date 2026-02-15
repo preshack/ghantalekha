@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Approval Required — Ghanta Haan{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen px-4">
+    <div class="w-full max-w-md text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-10 border border-yellow-200 dark:border-yellow-700">
+            <h1 class="text-2xl font-bold text-yellow-700 dark:text-yellow-400 mb-4">Approval Required</h1>
+            <p class="mb-4 text-gray-700 dark:text-gray-300">Another employee (<b>{{ active_record.employee.name }}</b>) is currently clocked in.</p>
+            <p class="mb-6 text-gray-500 dark:text-gray-400">To start your shift, the current employee must approve or clock out. If approval is given, please provide a reason for dual shift.</p>
+
+            <form method="POST" action="{{ url_for('attendance.approve_shift') }}">
+                <input type="hidden" name="approver_id" value="{{ active_record.employee.id }}">
+                <input type="hidden" name="new_employee_id" value="{{ employee.id }}">
+                <div class="mb-4">
+                    <input type="password" name="approver_pin" maxlength="4" placeholder="Enter PIN for approval" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-lg">
+                </div>
+                <div class="mb-4">
+                    <textarea name="reason" placeholder="Reason for dual shift" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"></textarea>
+                </div>
+                <div class="flex justify-center gap-4">
+                    <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">Approve & Continue</button>
+                    <a href="{{ url_for('attendance.kiosk') }}" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold">Cancel</a>
+                </div>
+            </form>
+            <div class="mt-6">
+                <form method="POST" action="{{ url_for('attendance.force_clockout') }}">
+                    <input type="hidden" name="active_record_id" value="{{ active_record.id }}">
+                    <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold">Exit & Approve (Clock Out)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

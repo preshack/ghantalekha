@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Adjust Record — WorkClock{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <a href="{{ url_for('dashboard.employee_detail', employee_id=employee.id) }}"
+           class="text-sm text-brand-600 dark:text-brand-400 hover:underline">
+            ← Back to {{ employee.name }}
+        </a>
+    </nav>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Adjust Attendance Record</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            {{ employee.name }} &middot;
+            Original: {{ record.clock_in.strftime('%b %d, %Y %I:%M %p') }}
+            {% if record.clock_out %}
+                → {{ record.clock_out.strftime('%I:%M %p') }}
+            {% endif %}
+        </p>
+
+        {% if record.adjusted_by %}
+        <div class="mb-6 px-4 py-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700">
+            <p class="text-sm text-yellow-800 dark:text-yellow-300">
+                <strong>Previously adjusted</strong>
+                {% if record.adjustment_note %}
+                    — {{ record.adjustment_note }}
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('dashboard.adjust', record_id=record.id) }}">
+            {{ form.hidden_tag() }}
+
+            <!-- Clock In -->
+            <div class="mb-5">
+                <label for="clock_in" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Clock In
+                </label>
+                <input type="datetime-local" name="clock_in" id="clock_in"
+                       value="{{ form.clock_in.data.strftime('%Y-%m-%dT%H:%M') if form.clock_in.data else '' }}"
+                       class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
+                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                              focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+                       required>
+                {% for error in form.clock_in.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Clock Out -->
+            <div class="mb-5">
+                <label for="clock_out" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Clock Out
+                </label>
+                <input type="datetime-local" name="clock_out" id="clock_out"
+                       value="{{ form.clock_out.data.strftime('%Y-%m-%dT%H:%M') if form.clock_out.data else '' }}"
+                       class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
+                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                              focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+                       required>
+                {% for error in form.clock_out.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Note -->
+            <div class="mb-6">
+                <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Adjustment Note <span class="text-red-500">*</span>
+                </label>
+                <textarea name="note" id="note" rows="3"
+                          class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                 focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                                 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+                          placeholder="Reason for adjustment (required)"
+                          required>{{ form.note.data or '' }}</textarea>
+                {% for error in form.note.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end space-x-3">
+                <a href="{{ url_for('dashboard.employee_detail', employee_id=employee.id) }}"
+                   class="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
+                          bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600
+                          transition-colors">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-3 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700
+                               rounded-lg shadow-md hover:shadow-lg transition-all duration-200
+                               focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2
+                               dark:focus:ring-offset-gray-800">
+                    Save Adjustment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
