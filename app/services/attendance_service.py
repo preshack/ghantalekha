@@ -27,9 +27,11 @@ def process_pin(raw_pin, ip_address=None, gps_lat=None, gps_lng=None):
               .order_by(Attendance.clock_in.desc())
               .first())
 
-    # Check if any other employee is clocked in
+    # Check if any other employee is clocked in and NOT approved for overlap
     active_record = (Attendance.query
-                    .filter(Attendance.clock_out.is_(None), Attendance.employee_id != employee.id)
+                    .filter(Attendance.clock_out.is_(None), 
+                            Attendance.employee_id != employee.id,
+                            Attendance.adjusted_by.is_(None))
                     .first())
 
     if active_record:
