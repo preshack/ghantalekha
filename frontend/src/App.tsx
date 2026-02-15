@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PinPad } from './components/PinPad'
 import { AlertCircle, CheckCircle2, Factory, History, Timer, Users, XCircle, LogOut, ArrowRight, ShieldCheck } from 'lucide-react'
+import { API_BASE_URL } from './config'
 
 // Types based on backend responses
 interface ClockSuccess {
@@ -52,7 +53,7 @@ export default function App() {
     setError(undefined)
     
     try {
-      const res = await fetch('/clock', {
+      const res = await fetch(`${API_BASE_URL}/clock`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +74,15 @@ export default function App() {
         setSuccess(data)
       }
     } catch (err: any) {
-      setError(err.message || 'Connection error')
+      let msg = 'Connection error';
+      if (typeof err === 'string') msg = err;
+      else if (err?.message && typeof err.message === 'string') msg = err.message;
+      else if (err && typeof err === 'object') msg = JSON.stringify(err);
+      
+      // Clean up [object Object] mess if it slipped through
+      if (msg === '[object Object]') msg = 'Unknown server error';
+
+      setError(msg)
       // Clear error after 3s
       setTimeout(() => setError(undefined), 3000)
     } finally {
@@ -115,7 +124,7 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 relative z-10 flex items-center justify-center p-4">
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center p-4">
         <AnimatePresence mode="wait">
           
           {success ? (
@@ -159,6 +168,11 @@ export default function App() {
 
       {/* Footer */}
       <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-white/5 bg-slate-900/80 backdrop-blur-sm">
+        <div className="flex justify-center items-center gap-4 mb-2">
+            <a href={`${API_BASE_URL}/auth/login`} className="text-slate-400 hover:text-teal-400 transition-colors font-semibold">
+                Manager Login
+            </a>
+        </div>
         <p>&copy; {now.getFullYear()} Ghanta Haan System. Secure Connection.</p>
       </footer>
     </div>
@@ -216,7 +230,7 @@ function ApprovalView({ data, onCancel, onSuccess }: {
     setLoading(true)
     setError(undefined)
     try {
-      const res = await fetch('/force_clockout', {
+      const res = await fetch(`${API_BASE_URL}/force_clockout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ active_record_id: data.active_record.id })
@@ -240,7 +254,7 @@ function ApprovalView({ data, onCancel, onSuccess }: {
     
     // We will return the promise of the fetch
     const p = (async () => {
-        const res = await fetch('/approve_shift', {
+        const res = await fetch(`${API_BASE_URL}/approve_shift`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({

@@ -1,5 +1,5 @@
-const isDevelopment = import.meta.env.MODE === 'development';
-
-export const API_BASE_URL = isDevelopment 
-  ? ''  // Vite proxy handles this locally (forwarding to localhost:8000)
-  : import.meta.env.VITE_API_URL || ''; // In prod, use env var or relative path if served from same origin
+// Use empty strings in dev (proxy) to avoid CORS issues
+// In production, VITE_API_URL must be set if backend is on a different domain
+export const API_BASE_URL = import.meta.env.DEV 
+  ? '' 
+  : (import.meta.env.VITE_API_URL || '');
