@@ -5,6 +5,7 @@ import random
 from app.extensions import db
 from app.models.employee import Employee
 from app.models.attendance import Attendance
+from app.models.notification import Notification
 
 
 def register_seed_command(app):
@@ -16,6 +17,7 @@ def register_seed_command(app):
         click.echo('Seeding database...')
 
         # Clear existing data
+        Notification.query.delete()
         Attendance.query.delete()
         Employee.query.delete()
         db.session.commit()
